@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Websockets and HTTP Requests Demo</title>
+  </head>
+  <body>
+    <h1>Websockets and HTTP Requests Demo</h1>
+
+    <h2>WebSocket Communication</h2>
+    <div id="websocketStatus">WebSocket Status: Not connected</div>
+    <button onclick="connectWebSocket()">Connect</button>
+    <button onclick="disconnectWebSocket()">Disconnect</button>
+    <br><br>
+    <div id="websocketMessages"></div>
+    <input type="text" id="websocketInput" placeholder="Enter a message">
+    <button onclick="sendWebSocketMessage()">Send</button>
+
+    <h2>HTTP Requests</h2>
+    <button onclick="sendGetRequest()">Send GET Request</button>
+    <button onclick="sendPostRequest()">Send POST Request</button>
+    <div id="httpResponse"></div>
+
+    <script>
+      // WebSocket variables
+      let socket;
+
+      function connectWebSocket() {
+        socket = new WebSocket("ws://localhost:9000/ws");
+
+        socket.onopen = function (event) {
+          document.getElementById("websocketStatus").innerHTML =
+            "WebSocket Status: Connected";
+        };
+
+        socket.onmessage = function (event) {
+          document.getElementById("websocketMessages").innerHTML +=
+            "<p>" + event.data + "</p>";
+        };
+
+        socket.onclose = function (event) {
+          document.getElementById("websocketStatus").innerHTML =
+            "WebSocket Status: Not connected";
+        };
+      }
+
+      function disconnectWebSocket() {
+        if (socket) {
+          socket.close();
+        }
+      }
+
+      function sendWebSocketMessage() {
+        const message = document.getElementById("websocketInput").value;
+        socket.send(message);
+        document.getElementById("websocketInput").value = "";
+      }
+
+      // HTTP Request functions
+      function sendGetRequest() {
+        fetch("http://localhost:9000/get")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("httpResponse").innerHTML =
+              "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      function sendPostRequest() {
+        const data = { message: "Hello, server!" };
+
+        fetch("http://localhost:9000/post", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("httpResponse").innerHTML =
+              "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
